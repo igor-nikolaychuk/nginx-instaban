@@ -77,3 +77,31 @@ commands: {
     unbanCmd = "iptables -D %s -s %s -p tcp --destination-port 80 -j DROP"; # %%s => chainName, host
 }
 ```
+#Nginx configuratio example:
+```
+user www-data;
+worker_processes 1;
+pid /run/nginx.pid;
+
+events {
+        worker_connections 768;
+        # multi_accept on;
+}
+
+http {
+        access_log /var/log/nginx/access.log;
+        error_log /var/log/nginx/error.log;
+        gzip on;
+
+        limit_conn_zone $binary_remote_addr zone=addr:10m;
+        limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
+	
+	server 
+  {
+          location / {
+              limit_conn addr 1;
+              limit_req zone=one burst=5;
+	        }
+  }
+}
+```
